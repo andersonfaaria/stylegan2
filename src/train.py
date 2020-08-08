@@ -47,7 +47,7 @@ def run(dataset, train_dir, config, d_aug, diffaug_policy, cond, ops, jpg_data, 
     sc        = dnnlib.SubmitConfig()                                          # Options for dnnlib.submit_run().
     tf_config = {'rnd.np_random_seed': 1000}                                   # Options for tflib.init_tf().
     G.impl    = D.impl = ops
-
+    
     # resolutions
     data_res = basename(tfr_file).split('-')[-1].split('x') # get resolution from dataset filename
     data_res = list(reversed([int(x) for x in data_res])) # convert to int list
@@ -129,7 +129,7 @@ def main():
     # main
     parser.add_argument('--dataset', required=True, help='Training dataset path', metavar='DIR')
     parser.add_argument('--train_dir', default='train', help='Root directory for training results (default: %(default)s)', metavar='DIR')
-    parser.add_argument('--resume', default=None, help='Resume checkpoint path. None = from scratch', metavar='DIR')
+    parser.add_argument('--resume', default='latest', help='Resume checkpoint path. None = from scratch', metavar='DIR')
     parser.add_argument('--resume_kimg', default=0, type=int, help='Resume training from (in thousands of images)', metavar='N')
     parser.add_argument('--lod_step_kimg', default=20, type=int, help='Thousands of images per LOD/layer step (default: %(default)s)', metavar='N')
     parser.add_argument('--finetune', action='store_true', help='finetune trained model (start from 1e4 kimg, stop when enough)')

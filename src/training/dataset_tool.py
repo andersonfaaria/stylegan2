@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__))) # upper dir
 
 import dnnlib
 
-from util.progress_bar import ProgressBar
+from tqdm import tqdm
 
 class TFRecordExporter:
     def __init__(self, data_dir, expected_images, print_progress=False, progress_interval=10):
@@ -124,11 +124,9 @@ def create_from_images(dataset, jpg=False, shuffle=True, size=None):
 
     with TFRecordExporter(dataset, len(image_filenames)) as tfr:
         order = tfr.choose_shuffled_order() if shuffle else np.arange(len(image_filenames))
-        pbar = ProgressBar(order.size)
-        for idx in range(order.size):
+        for idx in tqdm(range(order.size)):
             img_path = image_filenames[order[idx]]
             tfr.add_image(img_path, jpg=jpg, size=size)
-            pbar.upd()
     return tfr.tfr_file, len(image_filenames)
 
 
@@ -143,4 +141,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

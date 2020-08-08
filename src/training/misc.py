@@ -26,11 +26,13 @@ def load_pkl(file_or_url):
         return pickle.load(file, encoding='latin1')
 
 def locate_latest_pkl(train_dir):
-    allpickles = sorted(glob.glob(os.path.join(train_dir, 'snapshot-*.pkl')))
+    allpickles = sorted(glob.glob(os.path.join(train_dir, '0*', 'snapshot-*.pkl')))
     if len(allpickles) == 0:
         return None, 0.
     latest_pickle = allpickles[-1]
-    kimg = int(os.path.splitext(latest_pickle)[0].split('-')[-1])
+    kimg = os.path.splitext(latest_pickle)[0].split('-')[-1]
+    if kimg == 'final':
+        kimg = os.path.splitext(allpickles[-2])[0].split('-')[-1]
     return latest_pickle, float(kimg)
 
 def save_pkl(obj, filename):
