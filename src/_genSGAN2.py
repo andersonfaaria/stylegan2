@@ -13,7 +13,7 @@ import dnnlib
 import dnnlib.tflib as tflib
 
 from util.utilgan import latent_anima, basename
-from util.progress_bar import ProgressBar
+from tqdm import tqdm
 
 desc = "Customized StyleGAN2 on Tensorflow"
 parser = argparse.ArgumentParser(description=desc)
@@ -24,6 +24,7 @@ parser.add_argument('--scale_type', choices = ['centr','side','fit'], default='c
 parser.add_argument('--trunc', type=float, default=0.8, help='Truncation psi 0..1 (lower = stable, higher = various)')
 parser.add_argument('--latent_size', type=int, default=512)
 parser.add_argument('--ops', default='cuda', help='Custom op implementation (cuda or ref)')
+parser.add_argument('--seed', type=int, default=None, help='Initial Seed for animation')
 # animation
 parser.add_argument('--frames', default='200-25', help='how many frames to generate')
 parser.add_argument("--cubic", action='store_true', help="Use cubic splines for smoothing")
@@ -85,23 +86,24 @@ def main():
         Gs.copy_vars_from(network)
     # Gs.print_layers()
     print(' out shape', Gs.output_shape[1:])
+	
+	if a.size is None:
+        a.size = Gs.output_shape[2:]
 
     z_dim = Gs.input_shape[1]
     shape = (1, z_dim)
     
     print(' making timeline..')
-    latents = latent_anima(shape, a.frames, a.fstep, cubic=a.cubic, gauss=a.gauss, verbose=True) # [frm,1,512]
+    latents = latent_anima(shape, a.frames, a.fstep, cubic=a.cubic, gauss=a.gauss, verbose=True, seed=a.seed) # [frm,1,512]
     print(' latents', latents.shape)
     
     # generate images from latent timeline
     frame_count = latents.shape[0]
-    pbar = ProgressBar(frame_count)
-    for i in range(frame_count):
+    for i in tqdm(range(frame_count)):
         output = Gs.run(latents[i], [None], truncation_psi=a.trunc, randomize_noise=False, output_transform=fmt)
         ext = 'png' if output.shape[3]==4 else 'jpg'
         filename = osp.join(a.out_dir, "%05d.%s" % (i,ext))
         imsave(filename, output[0])
-        pbar.upd()
 
     # convert latents to dlatents, save them
     latents = latents.squeeze(1) # [frm,512]
